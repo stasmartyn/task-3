@@ -1,9 +1,11 @@
 import React from "react";
-import s from "../index.css"
+import s from "../../index.css"
 function footer(){
     return(
       <footer className="footer">
-      <h4>lazy footer</h4>
+        <h4 className="cop">
+        ©2022 All Rights Reserved
+        </h4>
       </footer>
 )
 }

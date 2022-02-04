@@ -14,8 +14,8 @@ export default class UserProfile extends Component {
   createList = () => {
     return this.props.users.map((user) => {
       return (
-        <li key={user.id} className="list-item">
-          <div onClick={() => this.onAdditionalInfo(user.login)}>
+        <li key={user.id} className={`${this.props.selectUser.select ? 'is-shown' : 'list-item'}`}>
+          <div onClick={() => this.onAdditionalInfo(user.login)}   >
             <img src={user.avatar_url} alt={user.login} className="avatar" />
             <p className="name">{user.login}</p>
           </div>

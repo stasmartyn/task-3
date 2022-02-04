@@ -11,12 +11,12 @@ export default class SelectList extends Component {
       return (
         <li key={user.id} className="list-item">
           <img src={user.avatar_url} alt={user.login} className="avatar" />
-          {`${user.login}`}
-          <ul className="button-list">
-            <li className="button">
+          <p className="name">{`${user.login}`}</p>
+          <ul className="button-list_select">
+            <li className="button_list">
               <button
                 onClick={() => this.onDeleteId(user.id)}
-                className="delete_btn"
+                className="delete_btn button_select_list"
               >
                 Delete
               </button>
@@ -26,18 +26,12 @@ export default class SelectList extends Component {
       );
     });
   };
-  sadCat=()=>{
-    if(this.state.selectedUsers.length<1){
-        this.setState(({ sadcat }) => ({
-            sadcat: !sadcat,
-          }));
-      }      
-  }
+ 
   render() {
     return(
     <div>
       <ul className="list">{this.createList()}</ul>;
-      { this.props.sadcat &&(<Cat />)}
+      { !this.props.select.length &&(<Cat />)}
     </div>);
   }
 }

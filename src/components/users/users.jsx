@@ -1,12 +1,14 @@
 import React, { Component } from "react";
 import UserProfile from "../userProfile/userProfile";
 import SelectUsers from "../select/selectList";
-import Modal from "../../modal/modal";
+import Modal from "../modal/modal";
 import s from "../../index.css";
 import Filter from "../filter/filter";
 import Button from "../button/button";
-import Footer from "../../footer/footer";
-import Heder from "../heder/heder";
+import Footer from "../footer/footer";
+import Header from "../header/header";
+import userAPI from "../api/api";
+import listUserAPI from "../api/usersAPI";
 import Cat from "../cat";
 export default class User extends Component {
   state = {
@@ -14,37 +16,42 @@ export default class User extends Component {
     filter: "",
     selectedUsers: [],
     showModal: false,
-    aktiveTab: true,
-    sadcat:false,
+    activeTab: true,
+    user:[]
   };
-  togleModal = () => {
+  toggleModal = () => {
     this.setState(({ showModal }) => ({
       showModal: !showModal,
     }));
   };
   componentDidMount() {
-    console.log("component did mount");
-    this.sadCat()
-
-    fetch(`https://api.github.com/users`)
-      .then((response) => response.json())
-      .then((usersList) => {
-        this.setState({ users: usersList });
-      });
-    const saveSelect = localStorage.getItem("selectUsers");
-    const parseUser = JSON.parse(saveSelect);
-    if (parseUser !== null) {
-      this.setState({ selectedUsers: parseUser });
+    if(this.state.user.length<1){
+      listUserAPI.usersData().then((usersList) => {
+        this.setState({users:usersList})
+      })
     }
-    
+    const saveSelect = localStorage.getItem("selectUsers");
+  const parseUser = JSON.parse(saveSelect);
+  if (parseUser !== null) {
+    this.setState({ selectedUsers: parseUser });
+  
   }
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.selectedUsers !== prevState.selectedUsers) {
+
+
+  }
+  
+  componentDidUpdate(prevProps, prevState){
+    if (this.state.selectedUsers !== prevState.selectedUsers){
       localStorage.setItem(
         "selectUsers",
         JSON.stringify(this.state.selectedUsers)
       );
     }
+   
+   
+    
+      
+    
   }
   deleteItem = (Id) => {
     this.setState((prevState) => ({
@@ -52,44 +59,47 @@ export default class User extends Component {
     }));
   };
   selected = (selectedId) => {
-    let user = this.state.users.find((user) => user.id === selectedId);
+    let index = this.state.users.findIndex((user) => user.id === selectedId);
     let users = [...this.state.selectedUsers];
+    let allUsers = [...this.state.users];
+    let user = allUsers[index];
+    allUsers[index].selected = !allUsers[index].selected ? true : false;
+    this.setState({ users: allUsers });
     if (!users.includes(user)) {
       users.push(user);
 
       this.setState({
         selectedUsers: users,
       });
+
       localStorage.setItem(
         "selectUser",
         JSON.stringify(this.state.selectedUsers)
       );
     }
-    this.sadCat();
   };
-
-  AdditionalInfo = (userName) => {
-    fetch(`https://api.github.com/users/${userName}`)
-      .then((response) => response.json())
-      .then((user) => {
-        this.setState({ user: user });
-        setTimeout(() => {
-          this.togleModal();
-        });
-      }, 200);
-
-    this.setState({ user: [] });
-  };
+  additionalInfo=(userName)=>{
+    userAPI.additionalInfo(userName).then((user) => {
+      this.setState({ user: user });
+      setTimeout(() => {
+        this.toggleModal();
+      });
+    }, 200);
+  
+  this.setState({ user: [] });
+   
+  }
+  
+  
   allUser = () => {
-    this.setState(({ aktiveTab }) => ({
-      aktiveTab: !aktiveTab,
+    this.setState(({ activeTab }) => ({
+      activeTab: !activeTab,
     }));
   };
   deleteSelectUser = (id) => {
     this.setState((prevState) => ({
       selectedUsers: prevState.selectedUsers.filter((user) => user.id !== id),
     }));
-    this.sadCat()
   };
   setFilterToState = (filterData) => {
     this.setState({ ...this.state, filter: `${filterData}` });
@@ -100,64 +110,42 @@ export default class User extends Component {
     );
     return newArr;
   };
-  sadCat=()=>{
-    if(this.state.selectedUsers.length<1){
-        this.setState(({ sadcat }) => ({
-            sadcat: !sadcat,
-          }));
-      }      
-  }
-  render() {
-    const { users, selectedUsers, showModal, user, aktiveTab,sadcat } = this.state;
+  
 
-    console.log("render");
+  render() {
+    const { users, selectedUsers, showModal, user, activeTab, sadCat, } =
+      this.state;
+
 
     return (
       <section className="section">
-          <Heder/>
+        <Header />
+        
         <div className="side">
           <Filter setFilterToState={this.setFilterToState} />
-          <Button  aktiveTab={aktiveTab} allUser={this.allUser} />
+          <Button activeTab={activeTab} allUser={this.allUser} selectUser={this.selectUser} />
         </div>
-        {aktiveTab && (
+        {activeTab && (
           <UserProfile
             users={this.filterArr(users)}
             onDeleteItem={this.deleteItem}
             onSelectedId={this.selected}
-            onAdditionalInfo={this.AdditionalInfo}
+            onAdditionalInfo={this.additionalInfo}
+            selectUser={selectedUsers}
           />
         )}
-        {!aktiveTab && (
+        {!activeTab && (
           <SelectUsers
             select={selectedUsers}
             onDeleteItem={this.deleteSelectUser}
-            sadcat={sadcat}
+            sadCat={sadCat}
           />
-              
         )}
-        <Footer/>
+        <Footer />
         {showModal && (
-          <Modal>
-            <button type="button" onClick={this.togleModal}>
-              close
-            </button>
-            <div>
-              <img src={user.avatar_url} alt={user.login} className="avatar" />
-              <ul className="modal_list">
-                <li>{`${user.login}`}</li>
-                <li>
-                  <p>{`${user.name}`}</p>
-                  <p>{`${user.location}`}</p>
-                </li>
-                <li>
-                  {" "}
-                  <p>{`${user.followers}`}</p>
-                </li>
-              </ul>
-            </div>
-          </Modal>
+          <Modal user={user} toggleModal={this.toggleModal}/>
+        
         )}
-
       </section>
     );
   }

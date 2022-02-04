@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import s from "../../index.css"
 class Filter extends Component {
   setFilterValue = event => {
     let value = event.currentTarget.value.toLowerCase();
@@ -9,8 +9,8 @@ class Filter extends Component {
   render() {
     return (
       <div>
-        <h4>Find user by name</h4>
-        <input onChange={this.setFilterValue} className='input'></input>
+        <h4 className='input_title'>Find user by name</h4>
+        <input onChange={this.setFilterValue} className='input' placeholder='search'></input>
       </div>
     );
   }
